@@ -4,6 +4,9 @@ import (
 	"context"
 	"errors"
 	"testing"
+	"time"
+
+	"github.com/iwanjunaid/basesvc/domain/model"
 
 	"github.com/golang/mock/gomock"
 
@@ -15,38 +18,38 @@ import (
 
 func TestInsertAuthorController(t *testing.T) {
 	Convey("Insert Author Controller", t, func() {
+		var (
+			entAuthor = &model.Author{
+				Name:      "123",
+				Email:     "123",
+				CreatedAt: time.Now().Unix(),
+				UpdatedAt: time.Now().Unix(),
+			}
+		)
 		ctrl := gomock.NewController(t)
 		defer ctrl.Finish()
 		authorInteractor := interactor.NewMockAuthorInteractor(ctrl)
 		Convey("Negative Scenarios", func() {
 			Convey("Should return error", func() {
-				//entAuthor := &model.Author{
-				//	Name:      "123",
-				//	Email:     "123",
-				//	CreatedAt: time.Now().Unix(),
-				//	UpdatedAt: time.Now().Unix(),
-				//}
-
-				authorInteractor.EXPECT().Create(context.Background(), nil).Return(nil, errors.New("error"))
+				authorInteractor.EXPECT().Create(context.Background(), entAuthor).Return(nil, errors.New("error"))
 				ctrl := NewAuthorController(authorInteractor)
-				_, err := ctrl.InsertAuthor(context.Background(), nil)
-				So(err, ShouldNotBeNil)
+				_, err := ctrl.InsertAuthor(context.Background(), entAuthor)
+				So(err, ShouldBeError)
 			})
 		})
-		// Convey("Positive Scenarios", func() {
-		// 	Convey("Should return error", func() {
-		// 		entAuthor := &model.Author{
-		// 			Name:      "123",
-		// 			Email:     "123",
-		// 			CreatedAt: time.Now(),
-		// 			UpdatedAt: time.Now(),
-		// 		}
-		// 		repoAuthor.EXPECT().Create(context.Background(), entAuthor).Return(entAuthor, errors.New("error"))
-		// 		auCtrl := interactor.NewAuthorInteractor(nil, interactor.AuthorSQLRepository(repoAuthor))
-		// 		svc := NewAuthorController(auCtrl)
-		// 		res := svc.InsertAuthor(nil)
-		// 		So(res, ShouldBeNil)
-		// 	})
-		// })
+		Convey("Positive Scenarios", func() {
+			Convey("Should return error", func() {
+				author := &model.Author{
+					Name:      "123",
+					Email:     "123",
+					CreatedAt: time.Now().Unix(),
+					UpdatedAt: time.Now().Unix(),
+				}
+				authorInteractor.EXPECT().Create(context.Background(), author).Return(author, nil)
+				ctrl := NewAuthorController(authorInteractor)
+				res, _ := ctrl.InsertAuthor(context.Background(), author)
+				So(res, ShouldEqual, author)
+			})
+		})
 	})
 }
